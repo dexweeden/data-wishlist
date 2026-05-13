@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Data Wishlist — Display Board</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #111110;
+    --surface: #1C1C1A;
+    --surface2: #242422;
+    --border: #2E2E2B;
+    --border-med: #3A3A36;
+    --text: #F0EDE8;
+    --text-secondary: #9E9890;
+    --text-hint: #5A5952;
+    --q1: #60A5FA;
+    --q1-bg: #1E2A3A;
+    --q1-border: #2A3F5A;
+    --q2: #4ADE80;
+    --q2-bg: #1A2E22;
+    --q2-border: #254832;
+    --voted: #F59E0B;
+    --voted-bg: #2A2010;
+    --voted-border: #4A3A15;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 1.5rem 1.5rem 3rem;
+  }
+
+  .config-warning {
+    background: #2A1A0A;
+    border: 1px solid #6A3A10;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: #FED7AA;
+    line-height: 1.6;
+    display: none;
+  }
+  .config-warning code { font-family: 'DM Mono', monospace; background: #3A2510; padding: 1px 5px; border-radius: 3px; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem; gap: 12px; flex-wrap: wrap;
+  }
+
+  .title-group h1 { font-size: 22px; font-weight: 600; color: var(--text); }
+  .title-group .meta { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-hint); margin-top: 3px; }
+
+  .controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+  .btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border-med);
+    background: var(--surface); color: var(--text-secondary);
+    cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .btn:hover { background: var(--surface2); color: var(--text); border-color: #4A4A44; }
+  .btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn.vote-active { background: var(--voted-bg); color: var(--voted); border-color: var(--voted-border); }
+
+  .clear-btn {
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    color: #F87171; background: none;
+    border: 1px solid #3A1515; border-radius: var(--radius-sm);
+    padding: 7px 14px; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .clear-btn:hover { background: #2A1010; }
+
+  .vote-banner {
+    background: var(--voted-bg); border: 1px solid var(--voted-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 14px; font-size: 13px; color: var(--voted);
+    display: none; align-items: center; gap: 10px;
+    margin-bottom: 1rem; flex-wrap: wrap;
+  }
+  .vote-banner.show { display: flex; }
+  .vote-counter { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 14px; margin-left: auto; }
+
+  .section-heading { display: flex; align-items: center; gap: 10px; margin: 1.5rem 0 10px; }
+  .section-tag {
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 500;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 99px; border: 1px solid;
+  }
+  .q1-tag { color: var(--q1); background: var(--q1-bg); border-color: var(--q1-border); }
+  .q2-tag { color: var(--q2); background: var(--q2-bg); border-color: var(--q2-border); }
+  .section-count { font-size: 12px; color: var(--text-hint); font-family: 'DM Mono', monospace; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+    position: relative; transition: border-color 0.2s, background 0.2s;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .card.voted-card { background: var(--voted-bg); border-color: var(--voted-border); }
+  .card.top-card { border-color: var(--voted); }
+
+  .card-team { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text-hint); margin-bottom: 5px; letter-spacing: 0.05em; text-transform: uppercase; }
+  .card-text { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 12px; }
+
+  .card-footer { display: flex; align-items: center; gap: 8px; }
+
+  .vote-btn {
+    display: flex; align-items: center; gap: 4px;
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    padding: 4px 10px; border-radius: 99px;
+    border: 1px solid var(--border-med);
+    background: none; color: var(--text-secondary);
+    cursor: pointer; transition: all 0.15s;
+  }
+  .vote-btn:hover { border-color: var(--voted-border); color: var(--voted); background: var(--voted-bg); }
+  .vote-btn.on { background: var(--voted); border-color: var(--voted); color: var(--bg); }
+
+  .vote-tally { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-secondary); }
+
+  .top-badge {
+    position: absolute; top: 10px; right: 10px;
+    font-family: 'DM Mono', monospace; font-size: 9px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--voted); background: var(--voted-bg);
+    border: 1px solid var(--voted-border);
+    padding: 2px 7px; border-radius: 99px;
+  }
+
+  .empty-state { padding: 3rem 0; text-align: center; }
+  .empty-state p { font-size: 15px; color: var(--text-secondary); margin-bottom: 6px; }
+  .empty-state small { font-size: 13px; color: var(--text-hint); }
+
+  .live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ADE80; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+</style>
+</head>
+<body>
+
+<div class="config-warning" id="config-warning">
+  ⚠️ Firebase not configured. Replace <code>YOUR_API_KEY</code>, <code>YOUR_PROJECT_ID</code>,
+  and <code>YOUR_DATABASE_URL</code> in this file, then re-open it.
+</div>
+
+<div class="topbar">
+  <div class="title-group">
+    <h1>Data wishlist board</h1>
+    <p class="meta" id="meta-line"><span class="live-dot"></span>Connecting…</p>
+  </div>
+  <div class="controls">
+    <button class="btn active" id="btn-all" onclick="setView('all')">All ideas</button>
+    <button class="btn" id="btn-top" onclick="setView('top')">Top voted</button>
+    <button class="btn" id="btn-vote" onclick="toggleVoting()">◉ Vote mode</button>
+    <button class="clear-btn" onclick="clearAll()">Clear all</button>
+  </div>
+</div>
+
+<div class="vote-banner" id="vote-banner">
+  ◉ Vote mode on — pick your team's top 3 ideas across all cards
+  <span class="vote-counter" id="vote-counter">0 / 3 votes</span>
+</div>
+
+<div id="board">
+  <div class="empty-state"><p>Connecting to Firebase…</p></div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     STEP 1: Replace the 3 placeholder values below with
+     your Firebase project config, then save the file.
+     ════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:      "AIzaSyCoRFKfJL3JeVBJlhFMLvCoFzxSs3kC7p0",
+  authDomain:  "data-wishlist-63f48.firebaseapp.com",
+  databaseURL: "https://data-wishlist-63f48-default-rtdb.firebaseio.com",
+  projectId:   "data-wishlist-63f48",
+};
+
+if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+  document.getElementById('config-warning').style.display = 'block';
+}
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── state ────────────────────────────────────────────────
+let allItems  = [];
+let voteData  = {};      // global vote counts from Firebase
+let myVotes   = {};      // this session's votes (sessionStorage)
+let viewMode  = 'all';
+let votingOn  = false;
+
+try { myVotes = JSON.parse(sessionStorage.getItem('board_my_votes') || '{}'); } catch(e) {}
+
+// ── live listeners ───────────────────────────────────────
+onValue(ref(db, 'submissions'), snap => {
+  allItems = [];
+  if (snap.exists()) {
+    snap.forEach(child => {
+      const sub = child.val();
+      (sub.q1 || []).forEach(text => {
+        if (text && text.trim()) allItems.push({ text: text.trim(), team: sub.team, q: 1, id: makeId(sub.team, 'q1', text) });
+      });
+      (sub.q2 || []).forEach(text => {
+        if (text && text.trim()) allItems.push({ text: text.trim(), team: sub.team, q: 2, id: makeId(sub.team, 'q2', text) });
+      });
+    });
+  }
+  updateMeta();
+  render();
+});
+
+onValue(ref(db, 'votes'), snap => {
+  voteData = snap.exists() ? snap.val() : {};
+  render();
+});
+
+function makeId(team, q, text) {
+  const raw = team + '|' + q + '|' + text;
+  let hash = 0;
+  for (let i = 0; i < raw.length; i++) { hash = ((hash << 5) - hash) + raw.charCodeAt(i); hash |= 0; }
+  return 'id' + Math.abs(hash).toString(36);
+}
+
+function updateMeta() {
+  const teams = new Set(allItems.map(i => i.team)).size;
+  document.getElementById('meta-line').innerHTML =
+    `<span class="live-dot"></span>${allItems.length} idea${allItems.length !== 1 ? 's' : ''} · ${teams} team${teams !== 1 ? 's' : ''} · live`;
+}
+
+// ── view controls ────────────────────────────────────────
+window.setView = function(mode) {
+  viewMode = mode;
+  document.getElementById('btn-all').className = 'btn' + (mode === 'all' ? ' active' : '');
+  document.getElementById('btn-top').className = 'btn' + (mode === 'top' ? ' active' : '');
+  render();
+};
+
+window.toggleVoting = function() {
+  votingOn = !votingOn;
+  const btn = document.getElementById('btn-vote');
+  btn.className = 'btn' + (votingOn ? ' vote-active' : '');
+  btn.textContent = votingOn ? '◉ Voting on' : '◉ Vote mode';
+  document.getElementById('vote-banner').className = 'vote-banner' + (votingOn ? ' show' : '');
+  updateVoteCounter();
+  render();
+};
+
+function updateVoteCounter() {
+  const n = Object.keys(myVotes).length;
+  document.getElementById('vote-counter').textContent = n + ' / 3 votes';
+}
+
+// ── voting ───────────────────────────────────────────────
+window.castVote = async function(id) {
+  if (myVotes[id]) {
+    delete myVotes[id];
+    const newCount = Math.max(0, (voteData[id] || 1) - 1);
+    await set(ref(db, 'votes/' + id), newCount || null);
+  } else {
+    if (Object.keys(myVotes).length >= 3) {
+      alert('You can only vote for 3 ideas. Unvote one to change your pick.');
+      return;
+    }
+    myVotes[id] = true;
+    await set(ref(db, 'votes/' + id), (voteData[id] || 0) + 1);
+  }
+  try { sessionStorage.setItem('board_my_votes', JSON.stringify(myVotes)); } catch(e) {}
+  updateVoteCounter();
+};
+
+// ── clear all ────────────────────────────────────────────
+window.clearAll = async function() {
+  if (!confirm('Delete ALL submitted ideas and votes? This cannot be undone.')) return;
+  try {
+    await remove(ref(db, 'submissions'));
+    await remove(ref(db, 'votes'));
+    myVotes = {};
+    sessionStorage.removeItem('board_my_votes');
+    updateVoteCounter();
+  } catch(e) { alert('Could not clear — check console for details.'); console.error(e); }
+};
+
+// ── render ───────────────────────────────────────────────
+function render() {
+  const board = document.getElementById('board');
+
+  if (allItems.length === 0) {
+    board.innerHTML = `<div class="empty-state"><p>No ideas yet</p><small>Have teams open the submission form to add ideas — they'll appear here instantly.</small></div>`;
+    return;
+  }
+
+  let items = [...allItems];
+  if (viewMode === 'top') {
+    items.sort((a, b) => (voteData[b.id] || 0) - (voteData[a.id] || 0));
+  }
+
+  const q1 = items.filter(i => i.q === 1);
+  const q2 = items.filter(i => i.q === 2);
+
+  let html = '';
+
+  if (q1.length > 0) {
+    html += `<div class="section-heading">
+      <span class="section-tag q1-tag">Q1 · Access</span>
+      <span class="section-count">${q1.length} idea${q1.length !== 1 ? 's' : ''}</span>
+    </div><div class="cards">` + q1.map(cardHtml).join('') + `</div>`;
+  }
+
+  if (q2.length > 0) {
+    html += `<div class="section-heading">
+      <span class="section-tag q2-tag">Q2 · Wish list</span>
+      <span class="section-count">${q2.length} idea${q2.length !== 1 ? 's' : ''}</span>
+    </div><div class="cards">` + q2.map(cardHtml).join('') + `</div>`;
+  }
+
+  board.innerHTML = html;
+}
+
+function cardHtml(item) {
+  const vc     = voteData[item.id] || 0;
+  const voted  = !!myVotes[item.id];
+  const isTop  = vc >= 2 && viewMode === 'top';
+  const safeId = item.id;
+  const safeTxt = item.text.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeTeam = item.team.replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  return `<div class="card ${voted ? 'voted-card' : ''} ${isTop ? 'top-card' : ''}">
+    ${isTop ? `<span class="top-badge">★ top</span>` : ''}
+    <p class="card-team">${safeTeam}</p>
+    <p class="card-text">${safeTxt}</p>
+    <div class="card-footer">
+      ${votingOn ? `<button class="vote-btn ${voted ? 'on' : ''}" onclick="castVote('${safeId}')">${voted ? '✓ voted' : '◉ vote'}</button>` : ''}
+      ${vc > 0 ? `<span class="vote-tally">${vc} vote${vc !== 1 ? 's' : ''}</span>` : ''}
+    </div>
+  </div>`;
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Data Wishlist — Submit Ideas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F3EE;
+    --surface: #FFFFFF;
+    --border: #E2DDD6;
+    --border-strong: #C9C3BA;
+    --text: #1A1714;
+    --text-secondary: #6B6560;
+    --text-hint: #9E9890;
+    --q1: #1D4ED8;
+    --q1-bg: #EFF6FF;
+    --q1-border: #BFDBFE;
+    --q2: #15803D;
+    --q2-bg: #F0FDF4;
+    --q2-border: #BBF7D0;
+    --accent: #1A1714;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .page { max-width: 580px; margin: 0 auto; }
+
+  .header { margin-bottom: 2rem; }
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    margin-bottom: 6px;
+  }
+  h1 { font-size: 26px; font-weight: 600; line-height: 1.2; color: var(--text); margin-bottom: 8px; }
+  .header-sub { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+
+  .config-warning {
+    background: #FFF7ED;
+    border: 1px solid #FED7AA;
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.25rem;
+    font-size: 13px;
+    color: #9A3412;
+    line-height: 1.6;
+    display: none;
+  }
+  .config-warning code {
+    font-family: 'DM Mono', monospace;
+    background: #FEE8D0;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .team-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .team-block label { font-size: 13px; font-weight: 500; color: var(--text-secondary); white-space: nowrap; min-width: 80px; }
+  .team-block input {
+    flex: 1; border: none; background: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 500;
+    color: var(--text); outline: none;
+  }
+  .team-block input::placeholder { color: var(--text-hint); font-weight: 400; }
+
+  .q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .q-tag {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; font-weight: 500;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 99px;
+    margin-bottom: 10px; border: 1px solid;
+  }
+  .q1-tag { background: var(--q1-bg); color: var(--q1); border-color: var(--q1-border); }
+  .q2-tag { background: var(--q2-bg); color: var(--q2); border-color: var(--q2-border); }
+
+  .q-text { font-size: 15px; font-weight: 500; line-height: 1.5; color: var(--text); margin-bottom: 1rem; }
+
+  .ideas-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+
+  .idea-row { display: flex; gap: 6px; align-items: center; }
+  .idea-num { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-hint); min-width: 18px; text-align: right; }
+
+  .idea-input {
+    flex: 1; background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--text);
+    padding: 8px 12px; outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .idea-input:focus { border-color: var(--border-strong); background: #fff; }
+  .idea-input::placeholder { color: var(--text-hint); }
+
+  .remove-btn {
+    width: 28px; height: 28px; border: none; background: none;
+    cursor: pointer; color: var(--text-hint);
+    border-radius: var(--radius-sm);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: background 0.1s, color 0.1s; flex-shrink: 0;
+  }
+  .remove-btn:hover { background: #FEE2E2; color: #DC2626; }
+
+  .add-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+  .add-btn {
+    background: none; border: 1px dashed var(--border-strong);
+    border-radius: var(--radius-sm); color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 7px 12px; cursor: pointer;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .add-btn:hover { background: var(--bg); color: var(--text); border-color: var(--accent); }
+
+  .count-chip { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-hint); margin-left: auto; }
+
+  .submit-btn {
+    width: 100%; background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px; font-weight: 600; padding: 14px;
+    cursor: pointer; letter-spacing: 0.01em;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .submit-btn:hover { opacity: 0.88; }
+  .submit-btn:active { transform: scale(0.99); }
+  .submit-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .error-msg { font-size: 13px; color: #DC2626; margin-top: 8px; display: none; }
+
+  .success-screen { display: none; text-align: center; padding: 3rem 1rem; }
+  .success-icon {
+    width: 56px; height: 56px; background: #D1FAE5; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem; font-size: 26px;
+  }
+  .success-screen h2 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .success-screen p { font-size: 14px; color: var(--text-secondary); margin-bottom: 1.5rem; }
+  .another-btn {
+    background: none; border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; color: var(--text-secondary);
+    padding: 10px 20px; cursor: pointer;
+  }
+  .another-btn:hover { background: var(--bg); color: var(--text); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="config-warning" id="config-warning">
+    ⚠️ Firebase not configured yet. In this file, replace <code>YOUR_API_KEY</code>,
+    <code>YOUR_PROJECT_ID</code>, and <code>YOUR_DATABASE_URL</code> with your
+    Firebase project values, then re-open the file.
+  </div>
+
+  <div id="main-form">
+    <div class="header">
+      <p class="eyebrow">9:10–10:00 · Brainstorm</p>
+      <h1>Data wishlist</h1>
+      <p class="header-sub">Enter your team name and add as many ideas as you like for each question. Hit submit when you're done.</p>
+    </div>
+
+    <div class="team-block">
+      <label for="team-name">Team</label>
+      <input type="text" id="team-name" placeholder="e.g. Team A, Red Team…" autocomplete="off" />
+    </div>
+
+    <div class="q-card">
+      <span class="q1-tag">Q1 · Access</span>
+      <p class="q-text">What data do we already have but is difficult to find, access, and/or use?</p>
+      <div class="ideas-list" id="list-q1"></div>
+      <div class="add-row">
+        <button class="add-btn" onclick="addIdea('q1')">+ Add idea</button>
+        <span class="count-chip" id="hint-q1"></span>
+      </div>
+    </div>
+
+    <div class="q-card">
+      <span class="q2-tag">Q2 · Wish list</span>
+      <p class="q-text">What data do we not have that would help with your work or that we'd want to collect?</p>
+      <div class="ideas-list" id="list-q2"></div>
+      <div class="add-row">
+        <button class="add-btn" onclick="addIdea('q2')">+ Add idea</button>
+        <span class="count-chip" id="hint-q2"></span>
+      </div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitIdeas()">Submit our ideas →</button>
+    <p class="error-msg" id="error-msg"></p>
+  </div>
+
+  <div class="success-screen" id="success-screen">
+    <div class="success-icon">✓</div>
+    <h2 id="success-title">Ideas submitted!</h2>
+    <p id="success-body">Your ideas are now live on the board.</p>
+    <button class="another-btn" onclick="resetForm()">Submit another team's ideas</button>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     STEP 1: Replace the 3 placeholder values below with
+     your Firebase project config, then save the file.
+     ════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey:      "AIzaSyCoRFKfJL3JeVBJlhFMLvCoFzxSs3kC7p0",
+  authDomain:  "data-wishlist-63f48.firebaseapp.com",
+  databaseURL: "https://data-wishlist-63f48-default-rtdb.firebaseio.com",
+  projectId:   "data-wishlist-63f48",
+};
+
+if (firebaseConfig.apiKey === "YOUR_API_KEY") {
+  document.getElementById('config-warning').style.display = 'block';
+}
+
+const app = initializeApp(firebaseConfig);
+const db  = getDatabase(app);
+
+// ── local idea state ─────────────────────────────────────
+const ideas = { q1: [''], q2: [''] };
+
+function render(q) {
+  const list = document.getElementById('list-' + q);
+  list.innerHTML = '';
+  ideas[q].forEach((val, i) => {
+    const row = document.createElement('div');
+    row.className = 'idea-row';
+    row.innerHTML =
+      `<span class="idea-num">${i + 1}.</span>` +
+      `<input class="idea-input" type="text" placeholder="Type an idea…" autocomplete="off" />` +
+      (ideas[q].length > 1 ? `<button class="remove-btn" title="Remove">✕</button>` : '');
+    const input = row.querySelector('input');
+    input.value = val;
+    input.addEventListener('input', () => { ideas[q][i] = input.value; updateHint(q); });
+    const rmBtn = row.querySelector('.remove-btn');
+    if (rmBtn) rmBtn.addEventListener('click', () => { ideas[q].splice(i, 1); render(q); });
+    list.appendChild(row);
+  });
+  updateHint(q);
+}
+
+function updateHint(q) {
+  const n = ideas[q].filter(v => v.trim()).length;
+  document.getElementById('hint-' + q).textContent = n > 0 ? n + ' idea' + (n !== 1 ? 's' : '') : '';
+}
+
+window.addIdea = function(q) {
+  ideas[q].push('');
+  render(q);
+  document.querySelectorAll('#list-' + q + ' .idea-input').forEach((el, i, arr) => {
+    if (i === arr.length - 1) el.focus();
+  });
+};
+
+window.submitIdeas = async function() {
+  const team  = document.getElementById('team-name').value.trim();
+  const q1    = ideas.q1.filter(v => v.trim());
+  const q2    = ideas.q2.filter(v => v.trim());
+  const errEl = document.getElementById('error-msg');
+
+  if (!team) {
+    errEl.textContent = 'Please enter your team name.';
+    errEl.style.display = 'block';
+    document.getElementById('team-name').focus();
+    return;
+  }
+  if (q1.length === 0 && q2.length === 0) {
+    errEl.textContent = 'Please add at least one idea before submitting.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    await push(ref(db, 'submissions'), { team, q1, q2, ts: Date.now() });
+    document.getElementById('main-form').style.display = 'none';
+    document.getElementById('success-screen').style.display = 'block';
+    document.getElementById('success-title').textContent = team + ' — submitted!';
+    const total = q1.length + q2.length;
+    document.getElementById('success-body').textContent =
+      total + ' idea' + (total !== 1 ? 's' : '') + ' added to the board.';
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = 'Submit our ideas →';
+    errEl.textContent = 'Could not save — check your connection and try again.';
+    errEl.style.display = 'block';
+    console.error(e);
+  }
+};
+
+window.resetForm = function() {
+  ideas.q1 = [''];
+  ideas.q2 = [''];
+  document.getElementById('team-name').value = '';
+  document.getElementById('main-form').style.display = 'block';
+  document.getElementById('success-screen').style.display = 'none';
+  document.getElementById('submit-btn').disabled = false;
+  document.getElementById('submit-btn').textContent = 'Submit our ideas →';
+  document.getElementById('error-msg').style.display = 'none';
+  render('q1');
+  render('q2');
+};
+
+render('q1');
+render('q2');
+</script>
+</body>
+</html>
